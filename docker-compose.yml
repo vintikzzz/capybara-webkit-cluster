@@ -1,0 +1,35 @@
+nginx:
+  build: .
+  environment:
+    WEBKIT_PORT: 40000
+  command: /bin/sh ./run.sh
+  links:
+    - webkit
+    - consul
+  ports:
+  - "40000:40000"
+
+webkit:
+  image: vintikzzz/capybara-webkit-server
+  environment:
+    WEBKIT_PORT: 40000
+  security_opt:
+  - seccomp:unconfined
+  command: /bin/sh ./run.sh
+
+consul:
+  command: -server -bootstrap
+  image: progrium/consul
+  ports:
+  - "8300:8300"
+  - "8400:8400"
+  - "8500:8500"
+  - "8600:53/udp"
+
+registrator:
+  command: -internal consul://consul:8500
+  image: gliderlabs/registrator
+  links:
+  - consul
+  volumes:
+  - /var/run/docker.sock:/tmp/docker.sock

@@ -1,0 +1,18 @@
+worker_processes auto;
+
+events {
+    worker_connections  1024;
+}
+
+stream {
+    upstream webkit {
+        {{range service "capybara-webkit-server"}}server {{.Address}}:{{.Port}};
+        {{end}}
+    }
+    server {
+        listen {{env "WEBKIT_PORT"}};
+        proxy_connect_timeout 1s;
+        proxy_timeout 5s;
+        proxy_pass webkit;
+    }
+}

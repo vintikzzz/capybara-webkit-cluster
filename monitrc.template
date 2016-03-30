@@ -1,0 +1,26 @@
+set daemon 20
+
+set logfile /var/log/monit.log
+
+set statefile /var/lib/monit/state
+
+set eventqueue
+    basedir /var/lib/monit/events
+    slots 100
+
+check process nginx with pidfile $NGINX_PIDFILE
+    depends on consul_template
+    start program = "/opt/nginx/sbin/nginx -c /opt/nginx/conf/nginx.conf"
+    stop program = "/opt/nginx/sbin/nginx -s stop"
+    if failed port $WEBKIT_PORT type TCP then restart
+
+check process consul_template with pidfile $CONSUL_TEMPLATE_PIDFILE
+    start program = "/opt/consul-template.sh start"
+    stop program = "/opt/consul-template.sh stop"
+
+check file nginx_conf with path /opt/nginx/conf/nginx.conf
+    depends on nginx
+    if changed checksum then exec "/opt/nginx/sbin/nginx -s reload"
+
+check file consul_template_log with path $CONSUL_TEMPLATE_LOGFILE
+    if size > 1 MB then exec "/bin/rm $CONSUL_TEMPLATE_LOGFILE"
