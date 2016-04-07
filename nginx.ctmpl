@@ -6,7 +6,7 @@ events {
 
 stream {
     upstream webkit {
-        {{range service "capybara-webkit-server"}}server {{.Address}}:{{.Port}};
+        {{range service "capybara-webkit-server"}}server {{.ServiceAddress}}:{{.ServicePort}};
         {{end}}
     }
     server {
